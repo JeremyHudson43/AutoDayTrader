@@ -17,19 +17,15 @@ def screenshot_bluestacks():
     pyautogui.moveTo(190, 1067)  # Move the mouse to XY coordinates.
     pyautogui.click(duration=2)
 
-    pyautogui.write('bluestacks', interval=0.15)
+    pyautogui.write('realtimestockscreener', interval=0.15)
+
+    time.sleep(5)
 
     pyautogui.moveTo(246, 556, duration=2)  # Move the mouse to XY coordinates.
 
     pyautogui.click()
 
-    time.sleep(12)
-
-    stock_button = pyautogui.locateOnScreen('realtimestock.png')
-
-    pyautogui.click(stock_button)
-
-    time.sleep(10)
+    time.sleep(18)
 
     # change = pyautogui.locateOnScreen('volume.png')
 
@@ -39,7 +35,7 @@ def screenshot_bluestacks():
 
     time.sleep(10)
 
-    im = pyautogui.screenshot(region=(370, 339, 1420, 675))
+    im = pyautogui.screenshot(region=(370, 339, 1420, 575))
 
     im.save('test.png')
 
