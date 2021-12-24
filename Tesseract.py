@@ -7,74 +7,89 @@ import pytesseract
 import cv2
 import pandas as pd
 
-def value_to_float(x):
-    if type(x) == float or type(x) == int:
-        return x
-    if 'K' in x:
-        if len(x) > 1:
-            return float(x.replace('K', '')) * 1000
-        return 1000.0
-    if 'M' in x:
-        if len(x) > 1:
-            return float(x.replace('M', '')) * 1000000
-        return 1000000.0
-    if 'B' in x:
-        if len(x) > 1:
-            return float(x.replace('B', '')) * 1000000000
-        return 1000000000.0
-    if 'T' in x:
-        if len(x) > 1:
-            return float(x.replace('T', '')) * 1000000000000
-        return 1000000000000000.0
+class Tesseract_Driver():
 
-    return 0.0
+    def get_percent(self, first, second):
+        percent = first / second * 100
+        return percent
 
-tickers = []
-prices = []
-changes = []
-volumes = []
-floats = []
+    def value_to_float(self, x):
+        if type(x) == float or type(x) == int:
+            return x
+        if 'K' in x:
+            if len(x) > 1:
+                return float(x.replace('K', '')) * 1000
+            return 1000.0
+        if 'M' in x:
+            if len(x) > 1:
+                return float(x.replace('M', '')) * 1000000
+            return 1000000.0
+        if 'B' in x:
+            if len(x) > 1:
+                return float(x.replace('B', '')) * 1000000000
+            return 1000000000.0
+        if 'T' in x:
+            if len(x) > 1:
+                return float(x.replace('T', '')) * 1000000000000
+            return 1000000000000000.0
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+        return 0.0
 
-image = cv2.imread(r'test.png')
+    def return_df(self):
 
-gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        tickers = []
+        prices = []
+        changes = []
+        volumes = []
+        floats = []
+        volume_float_ratios = []
 
-threshold_img = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-data = pytesseract.image_to_string(threshold_img, lang='eng',config='--psm 6')
+        image = cv2.imread(r'test.png')
 
-lines = data.split("\n")
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-df = pd.DataFrame()
+        threshold_img = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
 
-for line in lines:
+        data = pytesseract.image_to_string(threshold_img, lang='eng', config='--psm 6')
 
-    ticker = line.split()[0]
-    price = line.split()[1]
-    change = line.split()[2]
+        lines = data.split("\n")
+        lines.pop(0)
 
-    volume = line.split()[3]
+        df = pd.DataFrame()
 
-    volume = value_to_float(volume)
+        for line in lines:
 
-    stock_float = line.split()[4]
-    stock_float = value_to_float(stock_float)
+            ticker = line.split()[0]
+            price = line.split()[1]
+            change = line.split()[2]
 
-    tickers.append(ticker)
-    prices.append(price)
-    changes.append(change)
-    volumes.append(volume)
-    floats.append(stock_float)
+            volume = line.split()[3]
 
-df['Ticker'] = tickers
-df['Price'] = prices
-df['Change'] = changes
-df['Volume'] = volumes
-df['Float'] = floats
+            volume = self.value_to_float(volume)
 
-print(df)
+            stock_float = line.split()[4]
+            stock_float = self.value_to_float(stock_float)
+
+            volume_float_ratio = self.get_percent(volume, stock_float)
+
+            tickers.append(ticker)
+            prices.append(price)
+            changes.append(change)
+            volumes.append(volume)
+            floats.append(stock_float)
+            volume_float_ratios.append(volume_float_ratio)
+
+        df['Ticker'] = tickers
+        df['Price'] = prices
+        df['Change'] = changes
+        df['Volume'] = volumes
+        df['Float'] = floats
+        df['Volume / Float Ratio'] = volume_float_ratios
+
+        return df
+
 
 
 
