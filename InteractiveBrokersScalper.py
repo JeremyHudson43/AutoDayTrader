@@ -1,0 +1,130 @@
+import time
+from ib_insync.contract import Index, Option, Stock
+from ib_insync.ib import IB
+from datetime import datetime
+import pandas as pd
+
+# Logging into Interactive Broker TWS
+ib = IB()
+# port for IB gateway : 4002
+# port for IB TWS : 7497
+ib.connect('127.0.0.1', 7497, clientId=1)
+
+# To get the current market value, first create a contract for the underlyer,
+# we are selecting Tesla for now with SMART exchanges:
+SPY = Stock('SPY', 'SMART', 'USD')
+
+UPRO = Stock('UPRO', 'SMART', 'USD')
+SPXU = Stock('SPXU', 'SMART', 'USD')
+
+purchased = False
+
+qty = 1
+ib.sleep(1)
+
+# Fetching historical data when market is closed for testing purposes
+market_data = pd.DataFrame(
+    ib.reqHistoricalData(
+        SPY,
+        endDateTime='',
+        durationStr='1 D',
+        barSizeSetting='3 mins',
+        whatToShow="TRADES",
+        useRTH=False,
+        formatDate=1,
+        keepUpToDate=True
+    ))
+
+start = datetime.strptime('04:00:00', '%H:%M:%S').time()
+end = datetime.strptime('09:29:00', '%H:%M:%S').time()
+
+premarket_data = market_data[market_data['date'].dt.time.between(start, end)]
+
+high_value = max(premarket_data['high'].to_list())
+low_value = min(premarket_data['low'].to_list())
+
+print(low_value, high_value)
+
+print("Market data: ", market_data)
+
+# last candle close, 4EMA and 55EMA values:
+last_close = market_data['close'].iloc[-1]
+
+print("last close: ", last_close)
+
+
+## STARTING THE ALGORITHM ##
+# Time frame: 6.30 hrs
+StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
+TimeNow = pd.to_datetime(ib.reqCurrentTime()).tz_convert('America/New_York')
+EndTime = pd.to_datetime("16:30").tz_localize('America/New_York')
+
+# Waiting for Market to Open
+if StartTime > TimeNow:
+    wait = (StartTime - TimeNow).total_seconds()
+    print("Waiting for Market to Open..")
+    print(f"Sleeping for {wait} seconds")
+    time.sleep(wait)
+    time.sleep(3 * 60)
+
+# Run the algorithm till the daily time frame exhausts:
+while TimeNow <= EndTime:
+    print("Trading started!")
+
+    time.sleep(60)
+
+    [SPY_close] = ib.reqTickers(SPY)
+
+    Current_SPY_Value = SPY_close.marketPrice()
+
+    if Current_SPY_Value > high_value and purchased == False:
+
+        [UPRO_close] = ib.reqTickers(UPRO)
+        print("ticker: ", UPRO)
+        Current_UPRO_Value = UPRO_close.marketPrice()
+
+        purchased = True
+
+        entry_order = ib.bracketOrder(
+            'BUY',
+            100,
+            limitPrice=Current_UPRO_Value,
+            takeProfitPrice=Current_UPRO_Value + Current_UPRO_Value * 1.005,
+            stopLossPrice=Current_UPRO_Value - Current_UPRO_Value * 1.005,
+        )
+
+        print("Bought UPRO!")
+
+        for o in entry_order:
+            ib.placeOrder(UPRO, o)
+
+    elif Current_SPY_Value < low_value and purchased == False:
+
+        purchased = True
+
+        [SPXU_close] = ib.reqTickers(SPXU)
+        print("ticker: ", SPXU)
+        Current_SPXU_Value = SPXU_close.marketPrice()
+
+        entry_order = ib.bracketOrder(
+            'BUY',
+            100,
+            limitPrice=Current_SPXU_Value ,
+            takeProfitPrice=Current_SPXU_Value  + Current_SPXU_Value  * 1.005,
+            stopLossPrice=Current_SPXU_Value - Current_SPXU_Value  * 1.005,
+        )
+
+        print('Bought SPXU!')
+
+        for o in entry_order:
+            ib.placeOrder(SPXU, o)
+
+    # Disconnect IB API service after market or trades over:
+    ib.disconnect()
+
+# **The ability to kill the trade while the market is trading
+# master square off or square off in IB
+# ib.cancelOrder()
+
+# on bash file close:
+# ib.reqGlobalCancel()
