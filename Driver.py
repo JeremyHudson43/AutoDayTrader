@@ -46,7 +46,8 @@ df = pd.read_csv('gappers.csv')
 df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
 tickers = df['Ticker'].to_list()
 
-pool = multiprocessing.Pool(len(tickers))
-pool.map(check_stock, tickers)
+if __name__ == "__main__":
+    pool = multiprocessing.Pool(len(tickers))
+    pool.map(check_stock, tickers)
 
-print(df)
+    print(df)
