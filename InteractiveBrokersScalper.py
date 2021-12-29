@@ -1,14 +1,16 @@
 import time
-from ib_insync.contract import Index, Option, Stock
+from ib_insync.contract import Stock
 from ib_insync.ib import IB
 from datetime import datetime
+from ib_insync import Order
 import pandas as pd
+import random
 
 # Logging into Interactive Broker TWS
 ib = IB()
 # port for IB gateway : 4002
 # port for IB TWS : 7497
-ib.connect('127.0.0.1', 7497, clientId=1)
+ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 5))
 
 # To get the current market value, first create a contract for the underlyer,
 # we are selecting Tesla for now with SMART exchanges:
@@ -83,41 +85,43 @@ while TimeNow <= EndTime:
         print("ticker: ", UPRO)
         Current_UPRO_Value = UPRO_close.marketPrice()
 
+        order = Order(orderId=2, action='Buy', orderType='LIMIT', lmtPrice=Current_UPRO_Value,
+                      totalQuantity=200)
+
+        ib.placeOrder(UPRO, order)
+
+        time.sleep(10)
+
+        order = Order(orderId=3, action='Sell', orderType='TRAIL', lmtPrice=last_close,
+                      trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
+
+        ib.placeOrder(UPRO, order)
+
         purchased = True
 
-        entry_order = ib.bracketOrder(
-            'BUY',
-            100,
-            limitPrice=Current_UPRO_Value,
-            takeProfitPrice=Current_UPRO_Value + Current_UPRO_Value * 1.005,
-            stopLossPrice=Current_UPRO_Value - Current_UPRO_Value * 1.005,
-        )
-
-        print("Bought UPRO!")
-
-        for o in entry_order:
-            ib.placeOrder(UPRO, o)
+        print('Bought UPRO!')
 
     elif Current_SPY_Value < low_value and purchased == False:
-
-        purchased = True
 
         [SPXU_close] = ib.reqTickers(SPXU)
         print("ticker: ", SPXU)
         Current_SPXU_Value = SPXU_close.marketPrice()
 
-        entry_order = ib.bracketOrder(
-            'BUY',
-            100,
-            limitPrice=Current_SPXU_Value ,
-            takeProfitPrice=Current_SPXU_Value  + Current_SPXU_Value  * 1.005,
-            stopLossPrice=Current_SPXU_Value - Current_SPXU_Value  * 1.005,
-        )
+        order = Order(orderId=2, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
+                      totalQuantity=200)
 
-        print('Bought SPXU!')
+        ib.placeOrder(SPXU, order)
 
-        for o in entry_order:
-            ib.placeOrder(SPXU, o)
+        time.sleep(10)
+
+        order = Order(orderId=3, action='Sell', orderType='TRAIL', lmtPrice=Current_SPXU_Value,
+                      trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
+
+        ib.placeOrder(SPXU, order)
+
+        purchased = True
+
+        print('Bought UPRO!')
 
     # Disconnect IB API service after market or trades over:
     ib.disconnect()
