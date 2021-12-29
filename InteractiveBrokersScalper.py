@@ -30,7 +30,7 @@ market_data = pd.DataFrame(
         SPY,
         endDateTime='',
         durationStr='1 D',
-        barSizeSetting='3 mins',
+        barSizeSetting='1 min',
         whatToShow="TRADES",
         useRTH=False,
         formatDate=1,
@@ -91,8 +91,8 @@ while TimeNow <= EndTime:
 
         time.sleep(10)
 
-        order = Order(orderId=3, action='Sell', orderType='TRAIL', 
-                      trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
+        order = Order(orderId=3, action='Sell', orderType='TRAIL',
+                      trailingPercent=0.5, totalQuantity=200)
 
         ib.placeOrder(UPRO, order)
 
@@ -114,13 +114,13 @@ while TimeNow <= EndTime:
         time.sleep(10)
 
         order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
+                      trailingPercent=0.5, totalQuantity=200)
 
         ib.placeOrder(SPXU, order)
 
         purchased = True
 
-        print('Bought UPRO!')
+        print('Bought SPXU!')
 
     # Disconnect IB API service after market or trades over:
     ib.disconnect()
