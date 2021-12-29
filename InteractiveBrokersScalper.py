@@ -107,14 +107,14 @@ while TimeNow <= EndTime:
         print("ticker: ", SPXU)
         Current_SPXU_Value = SPXU_close.marketPrice()
 
-        order = Order(orderId=2, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
+        order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
                       totalQuantity=200)
 
         ib.placeOrder(SPXU, order)
 
         time.sleep(10)
 
-        order = Order(orderId=3, action='Sell', orderType='TRAIL', lmtPrice=Current_SPXU_Value,
+        order = Order(orderId=5, action='Sell', orderType='TRAIL', lmtPrice=Current_SPXU_Value,
                       trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
 
         ib.placeOrder(SPXU, order)
