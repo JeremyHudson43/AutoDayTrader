@@ -10,7 +10,11 @@ import pandas as pd
 class Tesseract_Driver():
 
     def get_percent(self, first, second):
-        percent = first / second * 100
+
+        if first == 0 or second == 0:
+            return 0
+        else:
+            percent = first / second * 100
         return percent
 
     def value_to_float(self, x):
@@ -86,7 +90,10 @@ class Tesseract_Driver():
         df['Change'] = changes
         df['Volume'] = volumes
         df['Float'] = floats
-        df['Volume / Float Ratio'] = volume_float_ratios
+        df['V/F Ratio'] = volume_float_ratios
+
+        df = df[df['Float'].astype(float) < 25000000]
+        df = df[df['V/F Ratio'].astype(float) >= 50]
 
         return df
 

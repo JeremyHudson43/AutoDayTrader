@@ -7,86 +7,92 @@ from ib_insync import Order
 import random
 
 
-# Logging into Interactive Broker TWS
-ib = IB()
-# port for IB gateway : 4002
-# port for IB TWS : 7497
-ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
+class GapUpScalper_Driver():
 
-# To get the current market value, first create a contract for the underlyer,
-# we are selecting Tesla for now with SMART exchanges:
-SPY = Stock('SPY', 'SMART', 'USD')
+    def start_scalping(self, df):
 
-UPRO = Stock('UPRO', 'SMART', 'USD')
-SPXU = Stock('SPXU', 'SMART', 'USD')
+        count = 0
 
-# check like 5 stocks at once
+        final_stock = ""
 
-# if one of them has crossed premarket highs, pick that one
+        final_ticker_list = []
+        final_high_list = []
 
-# wait 10 minutes
+        ticker_dict = {}
 
-# take high of the highest candle after the 10 minutes is up
+        # Logging into Interactive Broker TWS
+        ib = IB()
+        # port for IB gateway : 4002
+        # port for IB TWS : 7497
+        ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
-# wait for another touch of the premarket high
+        # To get the current market value, first create a contract for the underlyer,
+        # we are selecting Tesla for now with SMART exchanges:
 
-# once the price breaks the high of the highest candle in that 10 minute period, buy
+        for ticker in df['Ticker'].to_list():
+            ticker = Stock(ticker, 'SMART', 'USD')
+            final_ticker_list.append(ticker)
 
-# set trailing stop loss
+        for ticker in final_ticker_list:
+            # Fetching historical data when market is closed for testing purposes
+            market_data = pd.DataFrame(
+                ib.reqHistoricalData(
+                    ticker,
+                    endDateTime='',
+                    durationStr='1 D',
+                    barSizeSetting='3 mins',
+                    whatToShow="TRADES",
+                    useRTH=False,
+                    formatDate=1,
+                    keepUpToDate=True
+                ))
 
-# ???
+            start = datetime.strptime('04:00:00', '%H:%M:%S').time()
+            end = datetime.strptime('09:29:00', '%H:%M:%S').time()
 
-# profit
+            premarket_data = market_data[market_data['date'].dt.time.between(start, end)]
 
-purchased = False
+            high_value = max(premarket_data['high'].to_list())
 
-qty = 1
-ib.sleep(1)
+            final_high_list.append(high_value)
 
-# Fetching historical data when market is closed for testing purposes
-market_data = pd.DataFrame(
-    ib.reqHistoricalData(
-        SPY,
-        endDateTime='',
-        durationStr='1 D',
-        barSizeSetting='3 mins',
-        whatToShow="TRADES",
-        useRTH=False,
-        formatDate=1,
-        keepUpToDate=True
-    ))
+            ticker_dict[ticker.symbol] = high_value
 
-start = datetime.strptime('04:00:00', '%H:%M:%S').time()
-end = datetime.strptime('09:29:00', '%H:%M:%S').time()
+        # check like 5 stocks at once
 
-premarket_data = market_data[market_data['date'].dt.time.between(start, end)]
+        # if one of them has crossed premarket highs, pick that one
 
-high_value = max(premarket_data['high'].to_list())
-low_value = min(premarket_data['low'].to_list())
+        for ticker, high in zip(ticker_dict.keys(), ticker_dict.values()):
 
-print(low_value, high_value)
+            ticker = Stock(ticker, 'SMART', 'USD')
 
-print("Market data: ", market_data)
+            [ticker] = ib.reqTickers(ticker)
 
-# last candle close, 4EMA and 55EMA values:
-last_close = market_data['close'].iloc[-1]
+            current_stock_value = ticker.marketPrice()
+
+            if current_stock_value > high:
+                print(ticker + " selected")
+                final_stock = ticker
 
 
-print("Trading started!")
 
-[SPY_close] = ib.reqTickers(SPY)
+        # wait 10 minutes
 
-order = Order(orderId = 2, action = 'Buy', orderType = 'LIMIT', lmtPrice= last_close ,
-           totalQuantity = 200)
+        # take high of the highest candle after the 10 minutes is up
 
-ib.placeOrder(SPY, order)
+        # wait for another touch of the premarket high
 
-time.sleep(10)
+        # once the price breaks the high of the highest candle in that 10 minute period, buy
 
-order = Order(orderId = 3, action = 'Sell', orderType = 'TRAIL',
-              trailingPercent = 1.0, totalQuantity = 200)
+        # set trailing stop loss
 
-ib.placeOrder(SPY, order)
+        # ???
 
+        # profit
+
+        purchased = False
+
+        qty = 1
+        ib.sleep(1)
 
 
