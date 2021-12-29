@@ -10,7 +10,7 @@ import random
 ib = IB()
 # port for IB gateway : 4002
 # port for IB TWS : 7497
-ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 5))
+ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
 # To get the current market value, first create a contract for the underlyer,
 # we are selecting Tesla for now with SMART exchanges:
@@ -54,7 +54,6 @@ last_close = market_data['close'].iloc[-1]
 
 print("last close: ", last_close)
 
-
 ## STARTING THE ALGORITHM ##
 # Time frame: 6.30 hrs
 StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
@@ -92,7 +91,7 @@ while TimeNow <= EndTime:
 
         time.sleep(10)
 
-        order = Order(orderId=3, action='Sell', orderType='TRAIL', lmtPrice=last_close,
+        order = Order(orderId=3, action='Sell', orderType='TRAIL', 
                       trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
 
         ib.placeOrder(UPRO, order)
@@ -114,7 +113,7 @@ while TimeNow <= EndTime:
 
         time.sleep(10)
 
-        order = Order(orderId=5, action='Sell', orderType='TRAIL', lmtPrice=Current_SPXU_Value,
+        order = Order(orderId=5, action='Sell', orderType='TRAIL',
                       trailingPercent=1.0, trailStopPrice=last_close, totalQuantity=200)
 
         ib.placeOrder(SPXU, order)
