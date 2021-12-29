@@ -70,60 +70,69 @@ if StartTime > TimeNow:
 
 # Run the algorithm till the daily time frame exhausts:
 while TimeNow <= EndTime:
-    print("Trading started!")
+    try:
+        print("Looking for an opportunity!")
 
-    time.sleep(60)
+        [SPY_close] = ib.reqTickers(SPY)
 
-    [SPY_close] = ib.reqTickers(SPY)
+        Current_SPY_Value = SPY_close.marketPrice()
 
-    Current_SPY_Value = SPY_close.marketPrice()
+        print(low_value, high_value, Current_SPY_Value)
 
-    if Current_SPY_Value > high_value and purchased == False:
+        if Current_SPY_Value > high_value and purchased == False:
 
-        [UPRO_close] = ib.reqTickers(UPRO)
-        print("ticker: ", UPRO)
-        Current_UPRO_Value = UPRO_close.marketPrice()
+            [UPRO_close] = ib.reqTickers(UPRO)
+            print("ticker: ", UPRO)
+            Current_UPRO_Value = UPRO_close.marketPrice()
 
-        order = Order(orderId=2, action='Buy', orderType='LIMIT', lmtPrice=Current_UPRO_Value,
-                      totalQuantity=200)
+            order = Order(orderId=2, action='Buy', orderType='LIMIT', lmtPrice=Current_UPRO_Value,
+                          totalQuantity=200)
 
-        ib.placeOrder(UPRO, order)
+            ib.placeOrder(UPRO, order)
 
-        time.sleep(10)
+            time.sleep(10)
 
-        order = Order(orderId=3, action='Sell', orderType='TRAIL',
-                      trailingPercent=0.5, totalQuantity=200)
+            order = Order(orderId=3, action='Sell', orderType='TRAIL',
+                          trailingPercent=0.5, totalQuantity=200)
 
-        ib.placeOrder(UPRO, order)
+            ib.placeOrder(UPRO, order)
 
-        purchased = True
+            purchased = True
 
-        print('Bought UPRO!')
+            print('Bought UPRO!')
 
-    elif Current_SPY_Value < low_value and purchased == False:
+            ib.disconnect()
 
-        [SPXU_close] = ib.reqTickers(SPXU)
-        print("ticker: ", SPXU)
-        Current_SPXU_Value = SPXU_close.marketPrice()
+        elif Current_SPY_Value < low_value and purchased == False:
 
-        order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
-                      totalQuantity=200)
+            [SPXU_close] = ib.reqTickers(SPXU)
+            print("ticker: ", SPXU)
+            Current_SPXU_Value = SPXU_close.marketPrice()
 
-        ib.placeOrder(SPXU, order)
+            order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
+                          totalQuantity=200)
 
-        time.sleep(10)
+            ib.placeOrder(SPXU, order)
 
-        order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=0.5, totalQuantity=200)
+            time.sleep(10)
 
-        ib.placeOrder(SPXU, order)
+            order = Order(orderId=5, action='Sell', orderType='TRAIL',
+                          trailingPercent=0.5, totalQuantity=200)
 
-        purchased = True
+            ib.placeOrder(SPXU, order)
 
-        print('Bought SPXU!')
+            purchased = True
 
-    # Disconnect IB API service after market or trades over:
-    ib.disconnect()
+            print('Bought SPXU!')
+
+            ib.disconnect()
+
+        time.sleep(60)
+
+
+    except Exception as err:
+        print(err)
+
 
 # **The ability to kill the trade while the market is trading
 # master square off or square off in IB
