@@ -5,6 +5,7 @@ import pandas as pd
 import multiprocessing
 import time
 from datetime import datetime
+import gc
 
 pyAuto = PyAutoGUI.PyAutoGUI_Driver()
 tesseract = Tesseract.Tesseract_Driver()
@@ -44,10 +45,13 @@ def check_stock(stock_name):
     # Run the algorithm till the daily time frame exhausts:
     while TimeNow <= EndTime:
 
+
         # loop through all ticker / high values
         ticker, premarket_high = scalper.get_premarket_highs(stock_name)
         ticker = scalper.check_for_breakout(ticker, premarket_high)
 
+        gc.collect()
+        
         # scalper.check_for_second_support_touch(ticker, premarket_high)
         # scalper.check_for_final_breakout(ticker, premarket_high)
 
@@ -72,9 +76,19 @@ if __name__ == "__main__":
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     tickers = df['Ticker'].to_list()
 
+    count = 0
+
     while 1:
         try:
-            pool = multiprocessing.Pool(len(tickers))
-            pool.map(check_stock, tickers)
+            if count < len(tickers):
+                count = count + 1
+                check_stock(tickers[count - 1])
+                print(count)
+
+            elif count >= len(tickers):
+                count = 0
+
+            # pool = multiprocessing.Pool(len(tickers))
+            # pool.map(check_stock, tickers, maxtasksperchild=1000)
         except Exception as err:
             print(err)

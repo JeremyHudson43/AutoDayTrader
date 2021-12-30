@@ -41,8 +41,6 @@ class GapUpScalper_Driver():
 
             ticker_dict[ticker.symbol] = high_value
 
-            print(ticker.symbol, high_value)
-
             return ticker.symbol, high_value
 
     def check_for_breakout(self, ticker, high):
@@ -65,7 +63,7 @@ class GapUpScalper_Driver():
             if current_stock_value > high:
                 return ticker
 
-            time.sleep(60)
+            time.sleep(15)
 
             ib.disconnect()
 
