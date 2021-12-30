@@ -101,10 +101,9 @@ class GapUpScalper_Driver():
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if high - current_stock_value * 1.015 > 0:
                 touched_support_again = True
+                
 
-        print('hello')
-
-    def check_for_final_breakout(self, ticker):
+    def check_for_final_breakout(self, ticker, high):
         stock_brokeout = False
 
         while not stock_brokeout:
@@ -159,13 +158,13 @@ def buy_stock(self, ticker):
    # order = Order(orderId=5, action='Sell', orderType='TRAIL',
                   # trailingPercent=0.5, totalQuantity=200)
 
-    # ib.placeOrder(SPXU, order)
+   # ib.placeOrder(SPXU, order)
 
-    # purchased = True
+   # purchased = True
 
-    # print('Bought SPXU!')
+   # print('Bought SPXU!')
 
-    # ib.disconnect()
+   # ib.disconnect()
 
 
 
