@@ -165,9 +165,3 @@ def buy_stock(self, ticker):
    # print('Bought SPXU!')
 
    # ib.disconnect()
-
-
-
-
-
-
