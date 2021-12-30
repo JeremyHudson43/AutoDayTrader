@@ -101,7 +101,7 @@ class GapUpScalper_Driver():
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if high - current_stock_value * 1.015 > 0:
                 touched_support_again = True
-                
+
 
     def check_for_final_breakout(self, ticker, high):
         stock_brokeout = False
@@ -140,28 +140,28 @@ class GapUpScalper_Driver():
         return high_value_last_10_minutes
 
 
-def buy_stock(self, ticker):
+    def buy_stock(self, ticker):
 
-    print('test')
+       print('test')
 
-   #  [SPXU_close] = ib.reqTickers(SPXU)
-   #  print("ticker: ", SPXU)
-   #  Current_SPXU_Value = SPXU_close.marketPrice()
+       [SPXU_close] = ib.reqTickers(SPXU)
+       print("ticker: ", SPXU)
+       Current_SPXU_Value = SPXU_close.marketPrice()
 
-   #  order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
-                  # totalQuantity=200)
+       order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
+                      totalQuantity=200)
 
-   # ib.placeOrder(SPXU, order)
+       ib.placeOrder(SPXU, order)
 
-   # time.sleep(10)
+       time.sleep(10)
 
-   # order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                  # trailingPercent=0.5, totalQuantity=200)
+       order = Order(orderId=5, action='Sell', orderType='TRAIL',
+                      trailingPercent=0.5, totalQuantity=200)
 
-   # ib.placeOrder(SPXU, order)
+       ib.placeOrder(SPXU, order)
 
-   # purchased = True
+       purchased = True
 
-   # print('Bought SPXU!')
+       print('Bought SPXU!')
 
-   # ib.disconnect()
+       ib.disconnect()
