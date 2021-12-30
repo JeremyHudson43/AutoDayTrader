@@ -22,7 +22,9 @@ def kill_bluestacks():
             proc.kill()
 
 
+
 def check_stock(stock_name):
+
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
 
@@ -41,6 +43,7 @@ def check_stock(stock_name):
 
     # Run the algorithm till the daily time frame exhausts:
     while TimeNow <= EndTime:
+
         # loop through all ticker / high values
         ticker, premarket_high = scalper.get_premarket_highs(stock_name)
         ticker = scalper.check_for_breakout(ticker, premarket_high)
@@ -49,6 +52,8 @@ def check_stock(stock_name):
         # scalper.check_for_final_breakout(ticker, premarket_high)
 
         scalper.buy_stock(ticker)
+
+
 
 
 def generate_gapper_CSV():
@@ -67,7 +72,9 @@ if __name__ == "__main__":
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     tickers = df['Ticker'].to_list()
 
-    pool = multiprocessing.Pool(len(tickers))
-    pool.map(check_stock, tickers)
-
-    print(df)
+    while 1:
+        try:
+            pool = multiprocessing.Pool(len(tickers))
+            pool.map(check_stock, tickers)
+        except Exception as err:
+            print(err)

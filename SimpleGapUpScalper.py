@@ -51,22 +51,23 @@ class GapUpScalper_Driver():
 
         while not stock_brokeout:
 
-            time.sleep(60)
+            ticker_obj = Stock(ticker, 'SMART', 'USD')
 
-            ticker = Stock(ticker, 'SMART', 'USD')
-
-            [ticker] = ib.reqTickers(ticker)
+            [ticker] = ib.reqTickers(ticker_obj)
 
             current_stock_value = ticker.marketPrice()
 
-            print('Ticker', ticker)
-            print('Current Stock Value', current_stock_value)
-            print('Premarket High', high)
-            print('\n')
+            print('\nTicker: ', ticker_obj.symbol)
+            print('Current Stock Value: ', current_stock_value)
+            print('Premarket High: ', high)
 
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if current_stock_value > high:
                 return ticker
+
+            time.sleep(60)
+
+            ib.disconnect()
 
 
     def buy_stock(self, ticker):
