@@ -10,12 +10,11 @@ ticker_dict = {}
 
 # Logging into Interactive Broker TWS
 ib = IB()
+ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
 class GapUpScalper_Driver():
 
     def get_premarket_highs(self, ticker):
-            ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
-
             ticker = Stock(ticker, 'SMART', 'USD')
 
             # Fetching historical data when market is closed for testing purposes
@@ -60,24 +59,27 @@ class GapUpScalper_Driver():
             print('Premarket High: ', high)
 
             # if current stock value is greater than premarket high, add to list of stocks that broke out
-            if current_stock_value > high:
+            if current_stock_value < high:
                 return ticker
 
             time.sleep(15)
 
-            ib.disconnect()
+            # ib.disconnect()
 
 
     def buy_stock(self, ticker):
 
+       ticker = Stock(ticker, 'SMART', 'USD')
+
        [ticker_close] = ib.reqTickers(ticker)
 
-       print("ticker: ", ticker)
+       print(ticker_close)
+
+       print("ticker: ", ticker_close)
 
        Current_Ticker_Value = ticker_close.marketPrice()
 
-       order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_Ticker_Value,
-                      totalQuantity=200)
+       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=200)
 
        ib.placeOrder(ticker, order)
 
@@ -88,6 +90,6 @@ class GapUpScalper_Driver():
 
        ib.placeOrder(ticker, order)
 
-       print('Bought ' + ticker.symbol +  "!")
+       print('Bought ' + str(ticker.symbol) +  "!")
 
        ib.disconnect()
