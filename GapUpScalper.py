@@ -42,6 +42,8 @@ class GapUpScalper_Driver():
 
             ticker_dict[ticker.symbol] = high_value
 
+            print(ticker.symbol, high_value)
+
             return ticker.symbol, high_value
 
     def check_for_breakout(self, ticker, high):
@@ -82,14 +84,89 @@ class GapUpScalper_Driver():
         return high_value_last_10_minutes
 
 
-    def check_for_second_support_touch(self, ticker):
+    def check_for_second_support_touch(self, ticker, high):
+
+        touched_support_again = False
+
+        while not touched_support_again:
+
+            time.sleep(60)
+
+            ticker = Stock(ticker, 'SMART', 'USD')
+
+            [ticker] = ib.reqTickers(ticker)
+
+            current_stock_value = ticker.marketPrice()
+
+            # if current stock value is greater than premarket high, add to list of stocks that broke out
+            if high - current_stock_value * 1.015 > 0:
+                touched_support_again = True
+
         print('hello')
 
     def check_for_final_breakout(self, ticker):
-        print('hello')
+        stock_brokeout = False
 
-    def buy_stock(self, ticker):
-        print('hello')
+        while not stock_brokeout:
+
+            time.sleep(60)
+
+            ticker = Stock(ticker, 'SMART', 'USD')
+
+            [ticker] = ib.reqTickers(ticker)
+
+            current_stock_value = ticker.marketPrice()
+
+            # if current stock value is greater than premarket high, add to list of stocks that broke out
+            if current_stock_value > high:
+                stock_brokeout = True
+
+            time.sleep(600)
+
+        last_10_minutes = pd.DataFrame(
+            ib.reqHistoricalData(
+                ticker,
+                endDateTime='',
+                durationStr='600 S',
+                barSizeSetting='1 min',
+                whatToShow="TRADES",
+                useRTH=True,
+                formatDate=1,
+                keepUpToDate=True
+            ))
+
+        # get the highest value of the last 10 minutes
+        high_value_last_10_minutes = max(last_10_minutes['high'].to_list())
+
+        return high_value_last_10_minutes
+
+
+def buy_stock(self, ticker):
+
+    print('test')
+
+   #  [SPXU_close] = ib.reqTickers(SPXU)
+   #  print("ticker: ", SPXU)
+   #  Current_SPXU_Value = SPXU_close.marketPrice()
+
+   #  order = Order(orderId=4, action='Buy', orderType='LIMIT', lmtPrice=Current_SPXU_Value,
+                  # totalQuantity=200)
+
+   # ib.placeOrder(SPXU, order)
+
+   # time.sleep(10)
+
+   # order = Order(orderId=5, action='Sell', orderType='TRAIL',
+                  # trailingPercent=0.5, totalQuantity=200)
+
+    # ib.placeOrder(SPXU, order)
+
+    # purchased = True
+
+    # print('Bought SPXU!')
+
+    # ib.disconnect()
+
 
 
 
