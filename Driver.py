@@ -6,6 +6,7 @@ import multiprocessing
 import time
 from datetime import datetime
 import gc
+import sys
 
 pyAuto = PyAutoGUI.PyAutoGUI_Driver()
 tesseract = Tesseract.Tesseract_Driver()
@@ -46,15 +47,13 @@ def check_stock(stock_name):
     while TimeNow <= EndTime:
 
         # loop through all ticker / high values
-        # ticker, premarket_high = scalper.get_premarket_highs(stock_name)
-        # ticker = scalper.check_for_breakout(ticker, premarket_high)
-        
+        ticker, premarket_high = scalper.get_premarket_highs(stock_name)
+        ticker = scalper.check_for_breakout(ticker, premarket_high)
+
         # scalper.check_for_second_support_touch(ticker, premarket_high)
         # scalper.check_for_final_breakout(ticker, premarket_high)
 
-        scalper.buy_stock(stock_name)
-
-
+        scalper.buy_stock(ticker)
 
 
 def generate_gapper_CSV():
@@ -77,16 +76,14 @@ if __name__ == "__main__":
 
     while 1:
         # gc.collect()
-        # try:
-        if count < len(tickers):
-            count = count + 1
-            check_stock(tickers[count - 1])
-            print(count)
+        try:
+            if count < len(tickers):
+                count = count + 1
+                check_stock(tickers[count - 1])
+                print(count)
 
-        elif count >= len(tickers):
-            count = 0
+            elif count >= len(tickers):
+                count = 0
+        except Exception as err:
+            print(err)
 
-            # pool = multiprocessing.Pool(len(tickers))
-            # pool.map(check_stock, tickers, maxtasksperchild=1000)
-        # except Exception as err:
-            # print(err)
