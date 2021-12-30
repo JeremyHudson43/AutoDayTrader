@@ -38,7 +38,6 @@ def check_stock(stock_name):
         print("Waiting for Market to Open..")
         print(f"Sleeping for {wait} seconds")
         time.sleep(wait)
-        time.sleep(3 * 60)
 
     # Run the algorithm till the daily time frame exhausts:
     while TimeNow <= EndTime:

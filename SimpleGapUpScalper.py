@@ -59,6 +59,11 @@ class GapUpScalper_Driver():
 
             current_stock_value = ticker.marketPrice()
 
+            print('Ticker', ticker)
+            print('Current Stock Value', current_stock_value)
+            print('Premarket High', high)
+            print('\n')
+
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if current_stock_value > high:
                 return ticker
@@ -80,7 +85,7 @@ class GapUpScalper_Driver():
        time.sleep(10)
 
        order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=0.5, totalQuantity=200)
+                      trailingPercent=3, totalQuantity=200)
 
        ib.placeOrder(ticker, order)
 

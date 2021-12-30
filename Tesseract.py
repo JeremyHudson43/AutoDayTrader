@@ -39,6 +39,7 @@ class Tesseract_Driver():
                 return 1000000000000000.0
         except Exception as err:
             print(err)
+            return 0
 
         return 0.0
 
