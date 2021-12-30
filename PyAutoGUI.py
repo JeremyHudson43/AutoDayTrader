@@ -27,7 +27,7 @@ class PyAutoGUI_Driver():
 
         pyautogui.click()
 
-        time.sleep(18)
+        time.sleep(22)
 
         # change = pyautogui.locateOnScreen('volume.png')
 

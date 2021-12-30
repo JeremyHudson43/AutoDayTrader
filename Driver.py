@@ -26,10 +26,10 @@ def check_stock(stock_name):
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
 
-    now = datetime.now().time()  # time object
+    now = str(datetime.now().time())  # time object
 
     StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
-    TimeNow = pd.to_datetime(now).tz_convert('America/New_York')
+    TimeNow = pd.to_datetime(now).tz_localize('America/New_York')
     EndTime = pd.to_datetime("16:30").tz_localize('America/New_York')
 
     # Waiting for Market to Open
@@ -53,15 +53,10 @@ def check_stock(stock_name):
 
 
 def generate_gapper_CSV():
-    try:
-        pyAuto.screenshot_bluestacks()
-        df = tesseract.return_df()
-        df.to_csv('gappers.csv')
-    except Exception as err:
-        kill_bluestacks()
-        pyAuto.screenshot_bluestacks()
-        df = tesseract.return_df()
-        df.to_csv('gappers.csv')
+
+   #  pyAuto.screenshot_bluestacks()
+    df = tesseract.return_df()
+    df.to_csv('gappers.csv')
 
 
 if __name__ == "__main__":

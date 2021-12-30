@@ -18,24 +18,27 @@ class Tesseract_Driver():
         return percent
 
     def value_to_float(self, x):
-        if type(x) == float or type(x) == int:
-            return x
-        if 'K' in x:
-            if len(x) > 1:
-                return float(x.replace('K', '')) * 1000
-            return 1000.0
-        if 'M' in x:
-            if len(x) > 1:
-                return float(x.replace('M', '')) * 1000000
-            return 1000000.0
-        if 'B' in x:
-            if len(x) > 1:
-                return float(x.replace('B', '')) * 1000000000
-            return 1000000000.0
-        if 'T' in x:
-            if len(x) > 1:
-                return float(x.replace('T', '')) * 1000000000000
-            return 1000000000000000.0
+        try:
+            if type(x) == float or type(x) == int:
+                return x
+            if 'K' in x:
+                if len(x) > 1:
+                    return float(x.replace('K', '')) * 1000
+                return 1000.0
+            if 'M' in x:
+                if len(x) > 1:
+                    return float(x.replace('M', '')) * 1000000
+                return 1000000.0
+            if 'B' in x:
+                if len(x) > 1:
+                    return float(x.replace('B', '')) * 1000000000
+                return 1000000000.0
+            if 'T' in x:
+                if len(x) > 1:
+                    return float(x.replace('T', '')) * 1000000000000
+                return 1000000000000000.0
+        except Exception as err:
+            print(err)
 
         return 0.0
 
@@ -93,7 +96,8 @@ class Tesseract_Driver():
         df['V/F Ratio'] = volume_float_ratios
 
         df = df[df['Float'].astype(float) < 25000000]
-        df = df[df['V/F Ratio'].astype(float) >= 50]
+        df = df[df['V/F Ratio'].astype(float) >= 10]
+        df = df[df['Change'].astype(float) > 0]
 
         return df
 
