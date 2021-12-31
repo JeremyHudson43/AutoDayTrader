@@ -80,14 +80,18 @@ class GapUpScalper_Driver():
 
        Current_Ticker_Value = ticker_close.marketPrice()
 
-       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=200)
+       acc_vals = float([v.value for v in ib.accountValues() if v.tag == 'CashBalance' and v.currency == 'USD'][0])
+
+       qty = acc_vals // Current_Ticker_Value
+
+       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=qty)
 
        ib.placeOrder(ticker, order)
 
        time.sleep(10)
 
        order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=3, totalQuantity=200)
+                      trailingPercent=3, totalQuantity=qty)
 
        ib.placeOrder(ticker, order)
 

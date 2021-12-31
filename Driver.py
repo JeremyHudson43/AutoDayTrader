@@ -58,7 +58,7 @@ def check_stock(stock_name):
 
 def generate_gapper_CSV():
 
-   #  pyAuto.screenshot_bluestacks()
+    # pyAuto.screenshot_bluestacks()
     df = tesseract.return_df()
     df.to_csv('gappers.csv')
 
