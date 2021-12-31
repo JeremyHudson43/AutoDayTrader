@@ -82,14 +82,14 @@ class GapUpScalper_Driver():
 
        qty = acc_vals // (Current_Ticker_Value * 1.01)
 
-       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=100)
+       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=qty)
 
        ib.placeOrder(ticker_contract, order)
 
        time.sleep(10)
 
        order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=2.0, totalQuantity=100)
+                      trailingPercent=2.0, totalQuantity=qty)
 
        ib.placeOrder(ticker_contract, order)
 
