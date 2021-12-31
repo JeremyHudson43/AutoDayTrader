@@ -24,7 +24,7 @@ class GapUpScalper_Driver():
                     ticker,
                     endDateTime='',
                     durationStr='1 D',
-                    barSizeSetting='3 mins',
+                    barSizeSetting='1 min',
                     whatToShow="TRADES",
                     useRTH=False,
                     formatDate=1,
