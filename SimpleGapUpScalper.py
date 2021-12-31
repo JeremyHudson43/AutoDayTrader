@@ -86,12 +86,16 @@ class GapUpScalper_Driver():
 
        ib.placeOrder(ticker_contract, order)
 
-       time.sleep(10)
+       time.sleep(30)
 
        order = Order(orderId=5, action='Sell', orderType='TRAIL',
                       trailingPercent=2.0, totalQuantity=qty)
 
        ib.placeOrder(ticker_contract, order)
+
+       time.sleep(30)
+
+       ib.reqGlobalCancel()
 
        print('Bought ' + str(ticker) +  "!")
 

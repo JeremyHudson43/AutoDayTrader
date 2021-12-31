@@ -46,6 +46,11 @@ def check_stock(stock_name):
     # Run the algorithm till the daily time frame exhausts:
     while TimeNow <= EndTime:
 
+        # TODO:
+        # until you can get around PDT rule, select the first stock that breaks the PM high and disregard the rest
+        # add logic to sell if you've bought already and haven't sold 5 minutes before close
+        # add logic to cancel all orders if the price drops 1% below the premarket high then sell immediately
+
         # loop through all ticker / high values
         ticker, premarket_high = scalper.get_premarket_highs(stock_name)
         ticker = scalper.check_for_breakout(ticker, premarket_high)
@@ -76,14 +81,14 @@ if __name__ == "__main__":
 
     while 1:
         # gc.collect()
-        try:
-            if count < len(tickers):
-                count = count + 1
-                check_stock(tickers[count - 1])
-                print(count)
+       #  try:
+        if count < len(tickers):
+            count = count + 1
+            check_stock(tickers[count - 1])
+            print(count)
 
-            elif count >= len(tickers):
-                count = 0
-        except Exception as err:
-            print(err)
+        elif count >= len(tickers):
+            count = 0
+        # except Exception as err:
+           #  print(err)
 
