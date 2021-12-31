@@ -61,7 +61,7 @@ class GapUpScalper_Driver():
 
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if current_stock_value > high:
-                return ticker
+                return ticker_obj.symbol
 
             time.sleep(15)
 
@@ -70,11 +70,9 @@ class GapUpScalper_Driver():
 
     def buy_stock(self, ticker):
 
-       ticker = Stock(ticker, 'SMART', 'USD')
+       ticker_contract = Stock(ticker, 'SMART', 'USD')
 
-       [ticker_close] = ib.reqTickers(ticker)
-
-       print(ticker_close)
+       [ticker_close] = ib.reqTickers(ticker_contract)
 
        print("ticker: ", ticker_close)
 
@@ -82,19 +80,21 @@ class GapUpScalper_Driver():
 
        acc_vals = float([v.value for v in ib.accountValues() if v.tag == 'CashBalance' and v.currency == 'USD'][0])
 
-       qty = acc_vals // Current_Ticker_Value
+       qty = acc_vals // (Current_Ticker_Value * 1.01)
 
        order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=qty)
 
-       ib.placeOrder(ticker, order)
+       ib.placeOrder(ticker_contract, order)
 
        time.sleep(10)
 
        order = Order(orderId=5, action='Sell', orderType='TRAIL',
                       trailingPercent=3, totalQuantity=qty)
 
-       ib.placeOrder(ticker, order)
+       ib.placeOrder(ticker_contract, order)
 
        print('Bought ' + str(ticker.symbol) +  "!")
+
+       time.sleep(10)
 
        ib.disconnect()
