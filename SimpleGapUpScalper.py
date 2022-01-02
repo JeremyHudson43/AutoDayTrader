@@ -45,7 +45,7 @@ class GapUpScalper_Driver():
 
     def check_for_breakout(self, ticker, high):
 
-        stock_brokeout = False
+        stock_brokeout = True
 
         while not stock_brokeout:
 
@@ -61,14 +61,32 @@ class GapUpScalper_Driver():
 
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if current_stock_value > high:
-                return ticker_obj.symbol
+                return stock_brokeout, ticker_obj.symbol
 
             time.sleep(15)
 
             ib.disconnect()
 
 
-    def buy_stock(self, ticker):
+    def sell_stock(self, ticker):
+
+       ib.reqGlobalCancel()
+
+       ticker_contract = Stock(ticker, 'SMART', 'USD')
+
+       qty = [v.position for v in ib.positions()][0]
+
+       order = Order(orderId=8, action='Sell', orderType='MKT', totalQuantity=qty)
+
+       ib.placeOrder(ticker_contract, order)
+
+       print('Sold ' + str(ticker) +  "!")
+
+       time.sleep(10)
+
+       ib.disconnect()
+
+    def buy_stock(self, ticker, premarket_high):
 
        ticker_contract = Stock(ticker, 'SMART', 'USD')
 
@@ -80,25 +98,17 @@ class GapUpScalper_Driver():
 
        acc_vals = float([v.value for v in ib.accountValues() if v.tag == 'CashBalance' and v.currency == 'USD'][0])
 
-       qty = acc_vals // (Current_Ticker_Value * 1.01)
+       qty = acc_vals // (Current_Ticker_Value * 1.005)
 
-       order = Order(orderId=4, action='Buy', orderType='MKT',  totalQuantity=qty)
+       entry_order = ib.bracketOrder(
+           'BUY',
+           qty,
+           limitPrice=premarket_high * 1.01,
+           takeProfitPrice=premarket_high * 1.1,
+           stopLossPrice=premarket_high * 0.98,
+       )
 
-       ib.placeOrder(ticker_contract, order)
-
-       time.sleep(30)
-
-       order = Order(orderId=5, action='Sell', orderType='TRAIL',
-                      trailingPercent=2.0, totalQuantity=qty)
-
-       ib.placeOrder(ticker_contract, order)
-
-       time.sleep(30)
-
-       ib.reqGlobalCancel()
-
-       print('Bought ' + str(ticker) +  "!")
-
-       time.sleep(10)
+       for o in entry_order:
+           ib.placeOrder(ticker_contract, o)
 
        ib.disconnect()

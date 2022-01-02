@@ -25,7 +25,7 @@ def kill_bluestacks():
 
 
 
-def check_stock(stock_name):
+def check_stock(stock_name, final_stock_selected):
 
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
@@ -35,6 +35,8 @@ def check_stock(stock_name):
     StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
     TimeNow = pd.to_datetime(now).tz_localize('America/New_York')
     EndTime = pd.to_datetime("16:30").tz_localize('America/New_York')
+
+    time_until_market_close = (EndTime - TimeNow).total_seconds()
 
     # Waiting for Market to Open
     if StartTime > TimeNow:
@@ -48,17 +50,27 @@ def check_stock(stock_name):
 
         # TODO:
         # until you can get around PDT rule, select the first stock that breaks the PM high and disregard the rest
-        # add logic to sell if you've bought already and haven't sold 5 minutes before close
-        # add logic to cancel all orders if the price drops 1% below the premarket high then sell immediately
 
         # loop through all ticker / high values
-        ticker, premarket_high = scalper.get_premarket_highs(stock_name)
-        ticker = scalper.check_for_breakout(ticker, premarket_high)
+        if not final_stock_selected:
+            ticker, premarket_high = scalper.get_premarket_highs(stock_name)
+            stock_brokeout, ticker = scalper.check_for_breakout(ticker, premarket_high)
 
-        # scalper.check_for_second_support_touch(ticker, premarket_high)
-        # scalper.check_for_final_breakout(ticker, premarket_high)
+        if stock_brokeout and not final_stock_selected:
+            scalper.buy_stock(ticker, premarket_high)
+            final_stock_selected = True
 
-        scalper.buy_stock(ticker)
+            time.sleep(time_until_market_close - 300)
+
+        try:
+            # sell if you've bought already and haven't sold 5 minutes before close
+            if time_until_market_close < 300 and final_stock_selected:
+                scalper.sell_stock(ticker)
+                sys.exit(0)
+        except Exception as err:
+            print(err)
+
+
 
 
 def generate_gapper_CSV():
@@ -78,13 +90,14 @@ if __name__ == "__main__":
     tickers = df['Ticker'].to_list()
 
     count = 0
+    final_stock_selected = False
 
     while 1:
-        # gc.collect()
+       # gc.collect()
        #  try:
         if count < len(tickers):
             count = count + 1
-            check_stock(tickers[count - 1])
+            check_stock(tickers[count - 1], final_stock_selected)
             print(count)
 
         elif count >= len(tickers):
