@@ -4,94 +4,92 @@ import pandas as pd
 import random
 from bs4 import BeautifulSoup
 
-tickers = []
-prices = []
-changes = []
-volumes = []
-floats = []
-volume_float_ratios = []
+class GetGapper_Driver():
+
+    def get_percent(self, first, second):
+        if first == 0 or second == 0:
+            return 0
+        else:
+            percent = first / second * 100
+        return percent
+
+    def get_gappers(self):
+
+        tickers = []
+        prices = []
+        volumes = []
+        floats = []
+        volume_float_ratios = []
 
 
-def get_percent(first, second):
-    if first == 0 or second == 0:
-        return 0
-    else:
-        percent = first / second * 100
-    return percent
+        ib = IB()
 
+        ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
-def get_gappers():
-    ib = IB()
+        topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='TOP_PERC_GAIN', belowPrice=20, abovePrice=0.01, aboveVolume=500000)
 
-    ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
+        # topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='HOT_BY_VOLUME', belowPrice=20, abovePrice=0.01, aboveVolume=50000000)
 
-    topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='TOP_PERC_GAIN', belowPrice=20, abovePrice=0.01, aboveVolume=500000)
+        scanner = ib.reqScannerData(topPercentGainerListed, [])
 
-    # topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='HOT_BY_VOLUME', belowPrice=20, abovePrice=0.01, aboveVolume=50000000)
+        df = pd.DataFrame()
 
-    scanner = ib.reqScannerData(topPercentGainerListed, [])
+        # loop through the scanner results and get the contract details
+        for stock in scanner[:10]:
 
-    df = pd.DataFrame()
+            try:
+                security = Stock(stock.contractDetails.contract.symbol,
 
-    # loop through the scanner results and get the contract details
-    for stock in scanner[:10]:
+                                 stock.contractDetails.contract.exchange,
+                                 stock.contractDetails.contract.currency)
 
-        try:
-            security = Stock(stock.contractDetails.contract.symbol,
+                # request the fundamentals
+                fundamentals = ib.reqFundamentalData(security, 'ReportSnapshot')
 
-                             stock.contractDetails.contract.exchange,
-                             stock.contractDetails.contract.currency)
+                soup = BeautifulSoup(str(fundamentals), 'xml')
 
-            # request the fundamentals
-            fundamentals = ib.reqFundamentalData(security, 'ReportSnapshot')
+                shares = soup.find('SharesOut').text
+                shares = float(shares)
 
-            soup = BeautifulSoup(str(fundamentals), 'xml')
+                price = float(soup.find('Ratio').text)
 
-            print(soup)
+                # Fetching historical data when market is closed for testing purposes
+                premarket_data = pd.DataFrame(
+                    ib.reqHistoricalData(
+                        security,
+                        endDateTime='09:29:00',
+                        durationStr='1 D',
+                        barSizeSetting='1 min',
+                        whatToShow="TRADES",
+                        useRTH=False,
+                        formatDate=1
+                    ))
 
-            shares = soup.find('SharesOut').text
-            shares = float(shares)
+                volume = sum(premarket_data['volume'].tolist()) * 100
+                ratio = self.get_percent(volume, shares)
 
-            price = float(soup.find('Ratio').text)
+                if ratio > 20 and volume > 150000 and shares < 25000000 and price < 20:
+                    print('Ticker', security.symbol)
+                    print('Price', price)
+                    print("Shares Outstanding", shares)
+                    print("Volume", volume)
+                    print('Premarket Volume is', ratio, '% of Shares Outstanding\n')
 
-            # Fetching historical data when market is closed for testing purposes
-            premarket_data = pd.DataFrame(
-                ib.reqHistoricalData(
-                    security,
-                    endDateTime='09:29:00',
-                    durationStr='1 D',
-                    barSizeSetting='1 min',
-                    whatToShow="TRADES",
-                    useRTH=False,
-                    formatDate=1
-                ))
+                    tickers.append(security.symbol)
+                    prices.append(price)
+                    volumes.append(volume)
+                    floats.append(shares)
+                    volume_float_ratios.append(ratio)
 
-            volume = sum(premarket_data['volume'].tolist()) * 100
+                    df['Ticker'] = tickers
+                    df['Price'] = prices
+                    df['Volume'] = volumes
+                    df['Float'] = floats
+                    df['V/F Ratio'] = volume_float_ratios
 
-            maximum = max(premarket_data['high'].tolist())
+                print(df)
 
-            ratio = get_percent(volume, shares)
+                return df
 
-            if ratio > 20 and volume > 150000 and shares < 25000000 and price < 20:
-                print('Ticker', security.symbol)
-                print('Price', price)
-                print("Shares Outstanding", shares)
-                print("Volume", volume)
-                print('Premarket Volume is', ratio, '% of Shares Outstanding\n')
-
-                tickers.append(security.symbol)
-                prices.append(price)
-                volumes.append(volume)
-                floats.append(shares)
-                volume_float_ratios.append(ratio)
-
-            df['Ticker'] = tickers
-            df['Price'] = prices
-            df['Volume'] = volumes
-            df['Float'] = floats
-            df['V/F Ratio'] = volume_float_ratios
-
-            return df
-
-        except Exception as err:
-            print(err)
+            except Exception as err:
+                print(err)
