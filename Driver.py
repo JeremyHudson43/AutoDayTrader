@@ -42,6 +42,8 @@ def check_stock(stock_name, final_stock_selected):
             scalper.buy_stock(ticker, premarket_high)
             final_stock_selected = True
 
+            return final_stock_selected
+            
             time.sleep(time_until_market_close - 300)
 
         try:
@@ -60,7 +62,6 @@ def generate_gapper_CSV():
     return df
 
 
-
 if __name__ == "__main__":
 
     now = str(datetime.now().time())  # time object
@@ -72,7 +73,7 @@ if __name__ == "__main__":
     time_until_market_close = (EndTime - TimeNow).total_seconds()
 
     # Waiting for Market to Open
-    if StartTime < TimeNow:
+    if StartTime > TimeNow:
         wait = (StartTime - TimeNow).total_seconds()
         print("Waiting for Market to Open..")
         print(f"Sleeping for {wait} seconds")
@@ -88,12 +89,12 @@ if __name__ == "__main__":
     count = 0
     final_stock_selected = False
 
-    while 1:
+    while not final_stock_selected:
         # gc.collect()
         try:
             if count < len(tickers):
                 count = count + 1
-                check_stock(tickers[count - 1], final_stock_selected)
+                final_stock_selected = check_stock(tickers[count - 1], final_stock_selected)
                 print(count)
 
             elif count >= len(tickers):

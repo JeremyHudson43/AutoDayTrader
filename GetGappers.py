@@ -21,7 +21,6 @@ class GetGapper_Driver():
         floats = []
         volume_float_ratios = []
 
-
         ib = IB()
 
         ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
@@ -33,8 +32,8 @@ class GetGapper_Driver():
 
         tagValues = [
             TagValue("changePercAbove", "5"),
-            TagValue('priceAbove', 5),
-            TagValue('priceBelow', 50),
+            TagValue('priceAbove', 1),
+            TagValue('priceBelow', 25),
         ]
 
         # the tagValues are given as 3rd argument; the 2nd argument must always be an empty list
@@ -48,7 +47,7 @@ class GetGapper_Driver():
         df = pd.DataFrame()
 
         # loop through the scanner results and get the contract details
-        for stock in symbols:
+        for stock in symbols[:10]:
 
             try:
 
