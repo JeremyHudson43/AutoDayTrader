@@ -1,5 +1,5 @@
 from ib_insync.contract import Stock
-from ib_insync.ib import IB, ScannerSubscription
+from ib_insync.ib import IB, ScannerSubscription, TagValue
 import pandas as pd
 import random
 from bs4 import BeautifulSoup
@@ -26,22 +26,35 @@ class GetGapper_Driver():
 
         ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
-        topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='TOP_PERC_GAIN', belowPrice=20, abovePrice=0.01, aboveVolume=500000)
+        topPercentGainerListed= ScannerSubscription(
+            instrument='STK',
+            locationCode='STK.US.MAJOR',
+            scanCode='TOP_PERC_GAIN')
 
-        # topPercentGainerListed = ScannerSubscription(instrument='STK', locationCode='STK.US.MAJOR', scanCode='HOT_BY_VOLUME', belowPrice=20, abovePrice=0.01, aboveVolume=50000000)
+        tagValues = [
+            TagValue("changePercAbove", "5"),
+            TagValue('priceAbove', 5),
+            TagValue('priceBelow', 50),
+        ]
 
-        scanner = ib.reqScannerData(topPercentGainerListed, [])
+        # the tagValues are given as 3rd argument; the 2nd argument must always be an empty list
+        # (IB has not documented the 2nd argument and it's not clear what it does)
+        scanner = ib.reqScannerData(topPercentGainerListed, [], tagValues)
+
+        symbols = [sd.contractDetails.contract.symbol for sd in scanner]
+
+        print(symbols)
 
         df = pd.DataFrame()
 
         # loop through the scanner results and get the contract details
-        for stock in scanner[:10]:
+        for stock in symbols:
 
             try:
-                security = Stock(stock.contractDetails.contract.symbol,
 
-                                 stock.contractDetails.contract.exchange,
-                                 stock.contractDetails.contract.currency)
+                print(stock)
+
+                security = Stock(stock, 'SMART', 'USD')
 
                 # request the fundamentals
                 fundamentals = ib.reqFundamentalData(security, 'ReportSnapshot')
@@ -68,7 +81,7 @@ class GetGapper_Driver():
                 volume = sum(premarket_data['volume'].tolist()) * 100
                 ratio = self.get_percent(volume, shares)
 
-                if ratio > 20 and volume > 150000 and shares < 25000000 and price < 20:
+                if ratio > 10 and volume > 150000 and shares < 25000000 and price < 20:
                     print('Ticker', security.symbol)
                     print('Price', price)
                     print("Shares Outstanding", shares)
@@ -81,15 +94,15 @@ class GetGapper_Driver():
                     floats.append(shares)
                     volume_float_ratios.append(ratio)
 
-                    df['Ticker'] = tickers
-                    df['Price'] = prices
-                    df['Volume'] = volumes
-                    df['Float'] = floats
-                    df['V/F Ratio'] = volume_float_ratios
-
-                print(df)
-
-                return df
-
             except Exception as err:
                 print(err)
+
+        df['Ticker'] = tickers
+        df['Price'] = prices
+        df['Volume'] = volumes
+        df['Float'] = floats
+        df['V/F Ratio'] = volume_float_ratios
+
+        print(df)
+
+        return df

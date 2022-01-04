@@ -45,7 +45,7 @@ class GapUpScalper_Driver():
 
     def check_for_breakout(self, ticker, high):
 
-        stock_brokeout = True
+        stock_brokeout = False
 
         while not stock_brokeout:
 
@@ -61,6 +61,7 @@ class GapUpScalper_Driver():
 
             # if current stock value is greater than premarket high, add to list of stocks that broke out
             if current_stock_value > high:
+                stock_brokeout = True
                 return stock_brokeout, ticker_obj.symbol
 
             time.sleep(15)
@@ -98,14 +99,16 @@ class GapUpScalper_Driver():
 
        acc_vals = float([v.value for v in ib.accountValues() if v.tag == 'CashBalance' and v.currency == 'USD'][0])
 
-       qty = acc_vals // (Current_Ticker_Value * 1.005)
+       # qty = acc_vals // (Current_Ticker_Value * 10.005)
+
+       qty = 200
 
        entry_order = ib.bracketOrder(
            'BUY',
            qty,
            limitPrice=premarket_high * 1.01,
            takeProfitPrice=premarket_high * 1.1,
-           stopLossPrice=premarket_high * 0.98,
+           stopLossPrice=premarket_high * 0.99,
        )
 
        for o in entry_order:

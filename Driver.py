@@ -1,6 +1,5 @@
-import PyAutoGUI
-import Tesseract
 import SimpleGapUpScalper
+import GetGappers
 import pandas as pd
 import multiprocessing
 import time
@@ -8,25 +7,11 @@ from datetime import datetime
 import gc
 import sys
 
-pyAuto = PyAutoGUI.PyAutoGUI_Driver()
-tesseract = Tesseract.Tesseract_Driver()
 scalper = SimpleGapUpScalper.GapUpScalper_Driver()
-
-
-def kill_bluestacks():
-    import psutil
-
-    PROCNAME = "BlueStacks.exe"
-
-    for proc in psutil.process_iter():
-        # check whether the process name matches
-        if proc.name() == PROCNAME:
-            proc.kill()
-
+get_gappers_class = GetGappers.GetGapper_Driver()
 
 
 def check_stock(stock_name, final_stock_selected):
-
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
 
@@ -48,9 +33,6 @@ def check_stock(stock_name, final_stock_selected):
     # Run the algorithm till the daily time frame exhausts:
     while TimeNow <= EndTime:
 
-        # TODO:
-        # until you can get around PDT rule, select the first stock that breaks the PM high and disregard the rest
-
         # loop through all ticker / high values
         if not final_stock_selected:
             ticker, premarket_high = scalper.get_premarket_highs(stock_name)
@@ -71,37 +53,50 @@ def check_stock(stock_name, final_stock_selected):
             print(err)
 
 
-
-
 def generate_gapper_CSV():
-
-    # pyAuto.screenshot_bluestacks()
-    df = tesseract.return_df()
+    df = get_gappers_class.get_gappers()
     df.to_csv('gappers.csv')
+
+    return df
+
 
 
 if __name__ == "__main__":
 
-    generate_gapper_CSV()
+    now = str(datetime.now().time())  # time object
 
-    df = pd.read_csv('gappers.csv')
+    StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
+    TimeNow = pd.to_datetime(now).tz_localize('America/New_York')
+    EndTime = pd.to_datetime("16:30").tz_localize('America/New_York')
+
+    time_until_market_close = (EndTime - TimeNow).total_seconds()
+
+    # Waiting for Market to Open
+    if StartTime < TimeNow:
+        wait = (StartTime - TimeNow).total_seconds()
+        print("Waiting for Market to Open..")
+        print(f"Sleeping for {wait} seconds")
+        time.sleep(wait)
+
+    df = generate_gapper_CSV()
 
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     tickers = df['Ticker'].to_list()
+
+    print(tickers)
 
     count = 0
     final_stock_selected = False
 
     while 1:
-       # gc.collect()
-       #  try:
-        if count < len(tickers):
-            count = count + 1
-            check_stock(tickers[count - 1], final_stock_selected)
-            print(count)
+        # gc.collect()
+        try:
+            if count < len(tickers):
+                count = count + 1
+                check_stock(tickers[count - 1], final_stock_selected)
+                print(count)
 
-        elif count >= len(tickers):
-            count = 0
-        # except Exception as err:
-           #  print(err)
-
+            elif count >= len(tickers):
+                count = 0
+        except Exception as err:
+                print(err)
