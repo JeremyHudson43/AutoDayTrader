@@ -15,6 +15,8 @@ def check_stock(stock_name, final_stock_selected, premarket_high):
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
 
+    stock_brokeout = False
+
     now = str(datetime.now().time())  # time object
 
     StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
@@ -96,13 +98,13 @@ if __name__ == "__main__":
 
     while not final_stock_selected:
         # gc.collect()
-        # try:
-        if count < len(tickers):
-            count = count + 1
-            final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
-            print(count)
+        try:
+            if count < len(tickers):
+                count = count + 1
+                final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
+                print(count)
 
-        elif count >= len(tickers):
-            count = 0
-        # except Exception as err:
-                # print(err)
+            elif count >= len(tickers):
+                count = 0
+        except Exception as err:
+                print(err)
