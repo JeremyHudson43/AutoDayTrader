@@ -11,7 +11,7 @@ scalper = SimpleGapUpScalper.GapUpScalper_Driver()
 get_gappers_class = GetGappers.GetGapper_Driver()
 
 
-def check_stock(stock_name, final_stock_selected):
+def check_stock(stock_name, final_stock_selected, premarket_high):
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
 
@@ -35,7 +35,6 @@ def check_stock(stock_name, final_stock_selected):
 
         # loop through all ticker / high values
         if not final_stock_selected:
-            ticker, premarket_high = scalper.get_premarket_highs(stock_name)
             stock_brokeout, ticker = scalper.check_for_breakout(ticker, premarket_high)
 
         if stock_brokeout and not final_stock_selected:
@@ -88,6 +87,7 @@ if __name__ == "__main__":
 
     df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     tickers = df['Ticker'].to_list()
+    premarket_highs = df['Premarket_High'].to_list()
 
     print(tickers)
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         try:
             if count < len(tickers):
                 count = count + 1
-                final_stock_selected = check_stock(tickers[count - 1], final_stock_selected)
+                final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
                 print(count)
 
             elif count >= len(tickers):

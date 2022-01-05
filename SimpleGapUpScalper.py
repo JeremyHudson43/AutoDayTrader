@@ -11,37 +11,9 @@ ticker_dict = {}
 # Logging into Interactive Broker TWS
 ib = IB()
 
+ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
+
 class GapUpScalper_Driver():
-
-    def get_premarket_highs(self, ticker):
-            ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
-
-            ticker = Stock(ticker, 'SMART', 'USD')
-
-            # Fetching historical data when market is closed for testing purposes
-            market_data = pd.DataFrame(
-                ib.reqHistoricalData(
-                    ticker,
-                    endDateTime='',
-                    durationStr='1 D',
-                    barSizeSetting='1 min',
-                    whatToShow="TRADES",
-                    useRTH=False,
-                    formatDate=1,
-                    keepUpToDate=True
-                ))
-
-            # fetch premarket high and add ticker / high to dictionary
-            start = datetime.strptime('04:00:00', '%H:%M:%S').time()
-            end = datetime.strptime('09:29:00', '%H:%M:%S').time()
-
-            premarket_data = market_data[market_data['date'].dt.time.between(start, end)]
-
-            high_value = max(premarket_data['high'].to_list())
-
-            ticker_dict[ticker.symbol] = high_value
-
-            return ticker.symbol, high_value
 
     def check_for_breakout(self, ticker, high):
 
@@ -86,6 +58,7 @@ class GapUpScalper_Driver():
        time.sleep(10)
 
        ib.disconnect()
+
 
     def buy_stock(self, ticker, premarket_high):
 
