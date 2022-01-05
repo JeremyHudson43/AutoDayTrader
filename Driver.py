@@ -69,8 +69,6 @@ def generate_gapper_CSV():
 
 if __name__ == "__main__":
 
-    generate_gapper_CSV()
-
     now = str(datetime.now().time())  # time object
 
     StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
