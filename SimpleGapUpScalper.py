@@ -37,7 +37,7 @@ class GapUpScalper_Driver():
                 stock_brokeout = True
                 return stock_brokeout, ticker_obj.symbol
 
-            time.sleep(15)
+            time.sleep(5)
 
             ib.disconnect()
 
@@ -52,7 +52,7 @@ class GapUpScalper_Driver():
 
        qty = [v.position for v in ib.positions()][0]
 
-       order = Order(orderId=8, action='Sell', orderType='MKT', totalQuantity=qty)
+       order = Order(orderId=15, action='Sell', orderType='MKT', totalQuantity=qty)
 
        ib.placeOrder(ticker_contract, order)
 
@@ -82,8 +82,8 @@ class GapUpScalper_Driver():
        qty = 200
 
        limit_price = float(str(round(premarket_high * 1.01, 2)))
-       take_profit = float(str(round(premarket_high * 1.1, 2)))
-       stop_loss_price = float(str(round(ticker_close.marketPrice() * 0.99, 2)))
+       take_profit = float(str(round(premarket_high * 1.11, 2)))
+       stop_loss_price = float(str(round(premarket_high  * 0.99, 2)))
 
        entry_order = ib.bracketOrder(
            'BUY',
