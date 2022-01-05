@@ -11,11 +11,12 @@ ticker_dict = {}
 # Logging into Interactive Broker TWS
 ib = IB()
 
-ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
 class GapUpScalper_Driver():
 
     def check_for_breakout(self, ticker, high):
+
+        ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
 
         stock_brokeout = False
 
@@ -43,6 +44,8 @@ class GapUpScalper_Driver():
 
     def sell_stock(self, ticker):
 
+       ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
+
        ib.reqGlobalCancel()
 
        ticker_contract = Stock(ticker, 'SMART', 'USD')
@@ -62,6 +65,8 @@ class GapUpScalper_Driver():
 
     def buy_stock(self, ticker, premarket_high):
 
+       ib.connect('127.0.0.1', 7497, clientId=random.randint(0, 300))
+
        ticker_contract = Stock(ticker, 'SMART', 'USD')
 
        [ticker_close] = ib.reqTickers(ticker_contract)
@@ -76,7 +81,7 @@ class GapUpScalper_Driver():
 
        qty = 200
 
-       limit_price = float(str(round(premarket_high * 1.01, 2)))
+       limit_price = float(str(round(premarket_high * 1.02, 2)))
        take_profit = float(str(round(premarket_high * 1.1, 2)))
        stop_loss_price = float(str(round(ticker_close.marketPrice() * 0.99, 2)))
 

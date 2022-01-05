@@ -11,11 +11,9 @@ scalper = SimpleGapUpScalper.GapUpScalper_Driver()
 get_gappers_class = GetGappers.GetGapper_Driver()
 
 
-def check_stock(stock_name, final_stock_selected, premarket_high):
+def check_time():
     ## STARTING THE ALGORITHM ##
     # Time frame: 6.30 hrs
-
-    stock_brokeout = False
 
     now = str(datetime.now().time())  # time object
 
@@ -32,12 +30,18 @@ def check_stock(stock_name, final_stock_selected, premarket_high):
         print(f"Sleeping for {wait} seconds")
         time.sleep(wait)
 
-    # Run the algorithm till the daily time frame exhausts:
-    while TimeNow <= EndTime:
+    return StartTime, TimeNow, EndTime, time_until_market_close
 
-        # loop through all ticker / high values
-        if not final_stock_selected:
-            stock_brokeout, ticker = scalper.check_for_breakout(stock_name, premarket_high)
+
+def check_stock(stock_name, premarket_high, final_stock_selected):
+
+    start_time, time_now, end_time, time_until_market_close = check_time()
+
+    # loop through all ticker / high values
+    if not final_stock_selected:
+        stock_brokeout, ticker = scalper.check_for_breakout(stock_name, premarket_high)
+
+        print(ticker)
 
         if stock_brokeout and not final_stock_selected:
             scalper.buy_stock(ticker, premarket_high)
@@ -45,7 +49,7 @@ def check_stock(stock_name, final_stock_selected, premarket_high):
 
             return final_stock_selected
 
-            time.sleep(time_until_market_close - 300)
+            # time.sleep(time_until_market_close - 300)
 
         try:
             # sell if you've bought already and haven't sold 5 minutes before close
@@ -70,20 +74,7 @@ def generate_gapper_CSV():
 
 if __name__ == "__main__":
 
-    now = str(datetime.now().time())  # time object
-
-    StartTime = pd.to_datetime("9:30").tz_localize('America/New_York')
-    TimeNow = pd.to_datetime(now).tz_localize('America/New_York')
-    EndTime = pd.to_datetime("16:30").tz_localize('America/New_York')
-
-    time_until_market_close = (EndTime - TimeNow).total_seconds()
-
-    # Waiting for Market to Open
-    if StartTime > TimeNow:
-        wait = (StartTime - TimeNow).total_seconds()
-        print("Waiting for Market to Open..")
-        print(f"Sleeping for {wait} seconds")
-        time.sleep(wait)
+    check_time()
 
     df = generate_gapper_CSV()
 
@@ -96,12 +87,18 @@ if __name__ == "__main__":
     count = 0
     final_stock_selected = False
 
-    while not final_stock_selected:
+    start_time, time_now, end_time, time_until_market_close = check_time()
+
+    while not final_stock_selected and start_time <= end_time:
+
+        start_time, time_now, end_time, time_until_market_close = check_time()
+
         # gc.collect()
         try:
             if count < len(tickers):
                 count = count + 1
                 final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
+                time.sleep(10)
                 print(count)
 
             elif count >= len(tickers):
