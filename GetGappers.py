@@ -20,6 +20,7 @@ class GetGapper_Driver():
         volumes = []
         floats = []
         volume_float_ratios = []
+        premarket_highs = []
 
         ib = IB()
 
@@ -80,18 +81,20 @@ class GetGapper_Driver():
                 volume = sum(premarket_data['volume'].tolist()) * 100
                 ratio = self.get_percent(volume, shares)
 
-                if ratio > 10 and volume > 150000 and shares < 25000000 and price < 20:
+                if ratio > 10 and volume > 150000 and shares < 25000000:
                     print('Ticker', security.symbol)
                     print('Price', price)
                     print("Shares Outstanding", shares)
                     print("Volume", volume)
                     print('Premarket Volume is', ratio, '% of Shares Outstanding\n')
+                    print('Premarket High is', ratio)
 
                     tickers.append(security.symbol)
                     prices.append(price)
                     volumes.append(volume)
                     floats.append(shares)
                     volume_float_ratios.append(ratio)
+                    premarket_highs.append(premarket_data['high'].max())
 
             except Exception as err:
                 print(err)
@@ -101,6 +104,7 @@ class GetGapper_Driver():
         df['Volume'] = volumes
         df['Float'] = floats
         df['V/F Ratio'] = volume_float_ratios
+        df['Premarket_High'] = premarket_highs
 
         print(df)
 

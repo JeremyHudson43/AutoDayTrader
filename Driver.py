@@ -43,7 +43,7 @@ def check_stock(stock_name, final_stock_selected):
             final_stock_selected = True
 
             return final_stock_selected
-            
+
             time.sleep(time_until_market_close - 300)
 
         try:
@@ -56,13 +56,20 @@ def check_stock(stock_name, final_stock_selected):
 
 
 def generate_gapper_CSV():
+
+    today = datetime.today().strftime('%Y-%m-%d')
+
+    filepath = 'C:\\Users\\Frank Einstein\\PycharmProjects\\AutoDaytrader\\gapper_records\\gappers_' + today + '.csv'
+
     df = get_gappers_class.get_gappers()
-    df.to_csv('gappers.csv')
+    df.to_csv(filepath)
 
     return df
 
 
 if __name__ == "__main__":
+
+    generate_gapper_CSV()
 
     now = str(datetime.now().time())  # time object
 
