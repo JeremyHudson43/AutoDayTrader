@@ -35,7 +35,7 @@ def check_stock(stock_name, final_stock_selected, premarket_high):
 
         # loop through all ticker / high values
         if not final_stock_selected:
-            stock_brokeout, ticker = scalper.check_for_breakout(ticker, premarket_high)
+            stock_brokeout, ticker = scalper.check_for_breakout(stock_name, premarket_high)
 
         if stock_brokeout and not final_stock_selected:
             scalper.buy_stock(ticker, premarket_high)
@@ -96,13 +96,13 @@ if __name__ == "__main__":
 
     while not final_stock_selected:
         # gc.collect()
-        try:
-            if count < len(tickers):
-                count = count + 1
-                final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
-                print(count)
+        # try:
+        if count < len(tickers):
+            count = count + 1
+            final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
+            print(count)
 
-            elif count >= len(tickers):
-                count = 0
-        except Exception as err:
-                print(err)
+        elif count >= len(tickers):
+            count = 0
+        # except Exception as err:
+                # print(err)
