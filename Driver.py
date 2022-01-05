@@ -33,31 +33,26 @@ def check_time():
     return StartTime, TimeNow, EndTime, time_until_market_close
 
 
-def check_stock(stock_name, premarket_high, final_stock_selected):
+def sell_stock(ticker):
+    try:
+        # sell if you've bought already and haven't sold 5 minutes before close
+        scalper.sell_stock(ticker)
+        sys.exit(0)
+    except Exception as err:
+        print(err)
 
-    start_time, time_now, end_time, time_until_market_close = check_time()
+
+def check_stock(stock_name, premarket_high, final_stock_selected):
 
     # loop through all ticker / high values
     if not final_stock_selected:
         stock_brokeout, ticker = scalper.check_for_breakout(stock_name, premarket_high)
 
-        print(ticker)
-
         if stock_brokeout and not final_stock_selected:
             scalper.buy_stock(ticker, premarket_high)
             final_stock_selected = True
 
-            return final_stock_selected
-
-            # time.sleep(time_until_market_close - 300)
-
-        try:
-            # sell if you've bought already and haven't sold 5 minutes before close
-            if time_until_market_close < 300 and final_stock_selected:
-                scalper.sell_stock(ticker)
-                sys.exit(0)
-        except Exception as err:
-            print(err)
+            return final_stock_selected, ticker
 
 
 def generate_gapper_CSV():
@@ -89,7 +84,7 @@ if __name__ == "__main__":
 
     start_time, time_now, end_time, time_until_market_close = check_time()
 
-    while not final_stock_selected and start_time <= end_time:
+    while start_time <= end_time:
 
         start_time, time_now, end_time, time_until_market_close = check_time()
 
@@ -97,7 +92,12 @@ if __name__ == "__main__":
         try:
             if count < len(tickers):
                 count = count + 1
-                final_stock_selected = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
+                final_stock_selected, ticker = check_stock(tickers[count - 1], premarket_highs[count - 1], final_stock_selected)
+
+                if final_stock_selected:
+                    time.sleep(time_until_market_close - 300)
+                    sell_stock(ticker)
+
                 time.sleep(10)
                 print(count)
 

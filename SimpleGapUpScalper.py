@@ -81,7 +81,7 @@ class GapUpScalper_Driver():
 
        qty = 200
 
-       limit_price = float(str(round(premarket_high * 1.02, 2)))
+       limit_price = float(str(round(premarket_high * 1.01, 2)))
        take_profit = float(str(round(premarket_high * 1.1, 2)))
        stop_loss_price = float(str(round(ticker_close.marketPrice() * 0.99, 2)))
 
